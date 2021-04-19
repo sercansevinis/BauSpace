@@ -1,1 +1,1 @@
-# BauSpace
+# BauSpace is an classical spaceship game where you have to fire upon astroids to gain point. The only thing you have to do in order to run the game is changing the url desktop written in Veriler and Menu classes into your own desktop path.
