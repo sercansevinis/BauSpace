@@ -116,9 +116,7 @@ public class Menu extends JFrame {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
-			
-			
+							
 				System.out.println();
 				print2(treeeasy.getRoot());
 				treeeasy.print(treeeasy.getRoot());
@@ -155,6 +153,5 @@ public class Menu extends JFrame {
 
 	public static void main(String[] args) {
 		m.setVisible(true);
-
 	}
 }
