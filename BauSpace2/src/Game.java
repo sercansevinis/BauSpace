@@ -1,5 +1,3 @@
-
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -34,8 +32,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.Timer;
-
-
 
 class Shot {
 
@@ -80,6 +76,7 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 	File file;
 	File fileTree;
 	JLabel lblPoint;
+	JLabel lblPowerUp;
 	Random rnd=new Random();
 	Random rndHowMany=new Random();
 	Queue q1=new Queue(1000);
@@ -92,7 +89,12 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 	private int shot_wasted = 0;
 	private BufferedImage image;
 	private BufferedImage imageEnmy;
-	private BufferedImage imagePlanet;;
+	private BufferedImage imageSEnmy;
+	//private BufferedImage imagePlanet;
+	private BufferedImage imageEnmy1;
+	private BufferedImage imageEnmy2;
+	private BufferedImage imageSEnmy1;
+	private BufferedImage imageSEnmy2;
 	private ArrayList<Enemy> enemies = new ArrayList<Enemy>();
 	private int shotdirY = 5;
 	/*private int ballY = 0;
@@ -103,11 +105,14 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 	boolean b=true;
 	//public int i=0;
 	boolean forControl=true;
-	
 	boolean enabled=true;
+	//Powerup
+	boolean isActive=false;
 	public int sayac=0;
 	int whichPath;
 	int point;
+	long imgCounter=0;
+	ShotPowerUp powerUp=new ShotPowerUp();
 
 	public Game() {	
 		try {
@@ -115,11 +120,27 @@ public class Game extends JPanel implements KeyListener, ActionListener {
    			lblPoint.setFont(new Font("Serif", Font.BOLD, 20));
 			lblPoint.setForeground(Color.RED);
 			add(lblPoint);
+			
+			lblPowerUp=new JLabel("PowerUp:Passive");
+			lblPowerUp.setFont(new Font("Serif", Font.BOLD, 20));
+			lblPowerUp.setForeground(Color.RED);
+			add(lblPowerUp);
+			
 			Enemy e1=new Enemy();
 			enemies.add(e1);
 			image = ImageIO.read(new FileImageInputStream(new File("svJ1Jp6.png")));
+			/*
 			imageEnmy=ImageIO.read(new FileImageInputStream(new File("Enemy.png")));
 			imagePlanet=ImageIO.read(new FileImageInputStream(new File("Planet.png")));
+			*/
+			
+			imageEnmy=ImageIO.read(new FileImageInputStream(new File("rocket.png")));
+			imageSEnmy=ImageIO.read(new FileImageInputStream(new File("strongRocket.png")));
+			
+			imageEnmy1=ImageIO.read(new FileImageInputStream(new File("rocket.png")));
+			imageEnmy2=ImageIO.read(new FileImageInputStream(new File("rocket2.png")));
+			imageSEnmy1=ImageIO.read(new FileImageInputStream(new File("strongRocket.png")));
+			imageSEnmy2=ImageIO.read(new FileImageInputStream(new File("strongRocket2.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -159,7 +180,7 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 					{
 							for(Enemy enemy:enemies)
 							{
-								if(new Rectangle(shot.getX(), shot.getY(), 10, 20).intersects(new Rectangle(enemy.getX(), enemy.getY(), 20, 20))) {
+								if(new Rectangle(shot.getX(), shot.getY(), 10, 20).intersects(new Rectangle(enemy.getX(), enemy.getY(), 50, 50))) {
 									if(enemy.getEnemyType()==1)
 									{
 										if(enemy.health==2)
@@ -171,6 +192,13 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 										}
 										else if(enemy.health==1)
 										{
+											Random rnd=new Random();
+											if(rnd.nextInt(2)==0 && !powerUp.isActive())
+											{
+												powerUp.setActive(true);
+												lblPowerUp.setText("PowerUp:Active");
+												System.out.println("Power up geldi");
+											}
 											forControl=true;
 											point+=2;
 											lblPoint.setText("Point:"+point);
@@ -214,7 +242,7 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 					{
 							for(Enemy enemy:enemies)
 							{
-								if(new Rectangle(shot.getX(), shot.getY(), 10, 20).intersects(new Rectangle(enemy.getX(), enemy.getY(), 20, 20))) {
+								if(new Rectangle(shot.getX(), shot.getY(), 10, 20).intersects(new Rectangle(enemy.getX(), enemy.getY(), 50, 50))) {
 									if(enemy.getEnemyType()==1)
 									{
 										if(enemy.health==2)
@@ -226,6 +254,13 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 										}
 										else if(enemy.health==1)
 										{
+											Random rnd=new Random();
+											if(rnd.nextInt(2)==0 && !powerUp.isActive())
+											{
+												powerUp.setActive(true);
+												lblPowerUp.setText("PowerUp:Active");
+												System.out.println("Power up geldi");
+											}
 											forControl=true;
 											point++;
 											lblPoint.setText("Point:"+point);
@@ -269,7 +304,7 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 	{
 		for(Enemy enemy:enemies)
 		{
-			if(enemy.getY()>=950-(image.getHeight()/5))
+			if(enemy.getY()>=950-(image.getHeight()/2))
 			{
 				return true;
 			}
@@ -300,6 +335,18 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 	public void paint(Graphics g) {
 		super.paint(g);
 		time_passed += 5;
+		if(powerUp.isActive())
+		{
+			System.out.println(powerUp.getDuration());
+			powerUp.setDuration(powerUp.getDuration()+1);
+		}
+		if(powerUp.getDuration()>=690)
+		{
+			powerUp.setActive(false);
+			lblPowerUp.setText("PowerUp:Passive");
+			powerUp.setDuration(0);
+			System.out.println("süre sýfýrlandý");
+		}
 
 		g.setColor(Color.RED);
 		/*g.fillOval(80, ballY, 20, 20);
@@ -309,22 +356,51 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 		for (Enemy enemy : enemies) {
 			if(enemy.getActive() && enemy.getEnemyType()==0)
 			{
-			g.drawImage(imageEnmy, enemy.getX(), enemy.getY(), imageEnmy.getWidth()/20,imageEnmy.getHeight()/20,this);
+			//g.drawImage(imageEnmy, enemy.getX(), enemy.getY(), imageEnmy.getWidth()/20,imageEnmy.getHeight()/20,this);
+			g.drawImage(imageEnmy, enemy.getX(), enemy.getY(), imageEnmy.getWidth()/10,imageEnmy.getHeight()/10,this);
+			if(imgCounter%60<30)
+			{
+				try {
+					imageEnmy=imageEnmy1;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			}
+			else
+			{
+				try {
+					imageEnmy=imageEnmy2;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			}
+			
 			//Alttakiler can barý için
 			g.setColor(Color.GREEN);
 			g.fillRect(enemy.getX(), enemy.getY()-10, 30, 10);
 			}
 			else if(enemy.getActive()&&enemy.getEnemyType()==1)
 			{
+				if(imgCounter%60<30)
+				{
+					imageSEnmy=imageSEnmy1;
+				}
+				else
+				{
+					imageSEnmy=imageSEnmy2;
+				}
 				if(enemy.health==2)
 				{
-					g.drawImage(imagePlanet, enemy.getX(), enemy.getY(), imagePlanet.getWidth()/50,imagePlanet.getHeight()/50,this);
+					
+					g.drawImage(imageSEnmy, enemy.getX()-20, enemy.getY(), imageSEnmy.getWidth()/5,imageSEnmy.getHeight()/5,this);
 					g.setColor(Color.GREEN);
 					g.fillRect(enemy.getX()+10, enemy.getY()-10, 30, 10);
 				}
 				else if(enemy.health==1)
 				{
-					g.drawImage(imagePlanet, enemy.getX(), enemy.getY(), imagePlanet.getWidth()/50,imagePlanet.getHeight()/50,this);
+					g.drawImage(imageSEnmy, enemy.getX()-20, enemy.getY(), imageSEnmy.getWidth()/5,imageSEnmy.getHeight()/5,this);
 					g.setColor(Color.GREEN);
 					g.fillRect(enemy.getX()+10, enemy.getY()-10, 15, 10);
 					g.setColor(Color.RED);
@@ -332,8 +408,9 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 				}
 			
 			}
-			
+			imgCounter++;	
 		}
+		
 		
 		g.drawImage(image, shipX, 950, image.getWidth() / 5, image.getHeight() / 5, this);
 
@@ -485,27 +562,36 @@ public class Game extends JPanel implements KeyListener, ActionListener {
 			Shot shot=q1.queueArray[i];*/	
 			 if(shipX==70)
 			 {
-			q1.addQueue(new Shot(shipX+15,950), 1);
-			System.out.println("Eklendi 1 ");
+				 q1.addQueue(new Shot(shipX+15,950), 1);
+				System.out.println("Eklendi 1 ");
 			 }
 			 else if(shipX==270)
 			 {
-			q2.addQueue(new Shot(shipX+15,950), 2);
-			System.out.println("Eklendi 2 ");
+				 q2.addQueue(new Shot(shipX+15,950), 2);
+				System.out.println("Eklendi 2 ");
 			 }
 			 else if(shipX==470)
 			 {
-			q3.addQueue(new Shot(shipX+15,950), 3);
-			System.out.println("Eklendi 3 ");
+				 q3.addQueue(new Shot(shipX+15,950), 3);
+				System.out.println("Eklendi 3 ");
 			 }
 			 else if(shipX==670)
 			 {
-			q4.addQueue(new Shot(shipX+15,950), 4);
-			System.out.println("Eklendi 4 ");
+				 q4.addQueue(new Shot(shipX+15,950), 4);
+				 System.out.println("Eklendi 4 ");
 			 }
-			shot_wasted++;
-			sayac++;
-			//i++;
+			 
+			 shot_wasted++;
+			 
+			 if(!powerUp.isActive())
+			 {
+					sayac++;
+					//i++; 
+			 }
+			 else
+			 {
+				
+			 }
 		}
 		}
 		else {
